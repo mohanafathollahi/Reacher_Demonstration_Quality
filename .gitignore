@@ -1,0 +1,19 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+.env
+.idea/
+.vscode/
+.DS_Store
+# Generated demonstrations, trained networks, evaluations, and figures
+data/
+models/
+results/
+*.mp4
+*.gif
+# Keep folders tracked without generated outputs
+!data/.gitkeep
+!models/.gitkeep
+!results/.gitkeep
