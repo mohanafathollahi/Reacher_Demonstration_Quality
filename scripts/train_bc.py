@@ -52,24 +52,70 @@ def train(dataset,
 
 
 def main():
-    p=argparse.ArgumentParser()
-    p.add_argument('--dataset',type=Path,default=Path('data/variants'))
-    p.add_argument('--out',type=Path,default=Path('models'))
-    p.add_argument('--variants',nargs='+',default=['high_quality','low_quality','random_baseline'])
-    p.add_argument('--seeds',type=int,nargs='+',default=[0,1,2])
-    p.add_argument('--epochs',type=int,default=50)
-    p.add_argument('--batch-size',type=int,default=256)
-    p.add_argument('--lr',type=float,default=3e-4)
-    a=p.parse_args()
+    p = argparse.ArgumentParser()
 
-    for v in a.variants:
-        for seed in a.seeds:
-            train(a.dataset,
-                  v,
-                  seed,
-                  a.epochs,
-                  a.batch_size,
-                  a.lr,
-                  a.out)
+    p.add_argument("--dataset", type=Path, default=Path("data/variants"))
 
-if __name__=='__main__':main()
+    p.add_argument(
+        "--sizes",
+        type=int,
+        nargs="+",
+        default=[150, 300]
+    )
+
+    p.add_argument(
+        "--out",
+        type=Path,
+        default=Path("models")
+    )
+
+    p.add_argument(
+        "--variants",
+        nargs="+",
+        default=[
+            "high_quality",
+            "low_quality",
+            "random_baseline"
+        ]
+    )
+
+    p.add_argument(
+        "--seeds",
+        type=int,
+        nargs="+",
+        default=[0, 1, 2]
+    )
+
+    p.add_argument("--epochs", type=int, default=50)
+    p.add_argument("--batch-size", type=int, default=256)
+    p.add_argument("--lr", type=float, default=3e-4)
+
+    args = p.parse_args()
+
+    # Iterate over dataset sizes
+    for size in args.sizes:
+
+        dataset_dir = args.dataset / f"episodes_{size}"
+        output_dir = args.out / f"episodes_{size}"
+
+        print(f"\nTraining BC with {size} demonstrations")
+
+        # Iterate over demonstration sources
+        for variant in args.variants:
+
+            # Train three independent models
+            for seed in args.seeds:
+
+                train(
+                    dataset=dataset_dir,
+                    variant=variant,
+                    seed=seed,
+                    epochs=args.epochs,
+                    batch_size=args.batch_size,
+                    lr=args.lr,
+                    out=output_dir
+                )
+
+
+if __name__ == "__main__":
+    main()

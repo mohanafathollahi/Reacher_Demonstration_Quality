@@ -1,6 +1,7 @@
 # Reacher-v5: How Does Demonstration Quality Affect Imitation Learning?
 
-Robotics data experiment that uses a previously trained SAC controller as a *demonstration source*, 
+Robotics data experiment that uses a previously trained SAC and PPO controllers 
+as *demonstration sources*, 
 trains Behavioral Cloning (BC) policies on differently selected trajectories, 
 and evaluates those policies on held-out Reacher-v5 tasks.
 
@@ -14,18 +15,25 @@ and evaluates those policies on held-out Reacher-v5 tasks.
 ## Main Experiment Steps
 
 
-  <img src="figures/steps_reacher_demonstration_quality.png" width="88%">
+  <img src="figures/stps_effect of dataset_BC.png" width="88%">
 
-1. Collect deterministic SAC rollouts with unique reset seeds (default **10000–10299**).
+1. Collect expert deterministics with unique reset seeds 
+(default **10000–10299**) for SAC, ppo, and mix of both 
+demonstartions that consisit 50% of SAC and 50% of PPO.
+
 
 ```bash
-python -m scripts.collect \
-  --model ../SACvsPPO_Reacher-v5/models/sac_seed0.zip \
-  --episodes 300 --seed-start 10000
+python -m scripts.collect   --model ../SACvsPPO_Reacher-v5/models/sac_seed0.zip   --episodes 300 --seed-start 10000 --model_name "sac"
+
+python -m scripts.collect   --model ../SACvsPPO_Reacher-v5/models/ppo_seed0.zip   --episodes 300 --seed-start 10000 --model_name "ppo"
+
 ```
-It loads the SAC policy trained in [Git Repo](https://github.com/mohanafathollahi/SACvsPPO_Reacher-v5), 
-runs that policy on 300 reproducible 
-Reacher-v5 reaching tasks, and saves both the observation-action demonstrations and their performance statistics
+
+The trained models are in [Git Repo](https://github.com/mohanafathollahi/SACvsPPO_Reacher-v5), based on presented results
+SAC model could show better performance compared to PPO. Therefore, it conisdted as high quality dataset while PPO considered 
+as low quality data to train Behaviour Clonning model.
+
+Reacher-v5 reaching tasks, and saves both the observation-action demonstrations and their performance statistics.
 
 2. Compute per-trajectory statistics, including reaching distance and success.
 

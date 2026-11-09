@@ -1,18 +1,26 @@
-"""Collect full deterministic SAC trajectories. Use seeds disjoint from final test."""
+"""Collect full deterministic sac trajectories. Use seeds disjoint from final test."""
 import argparse
 from pathlib import Path
 import numpy as np
 import pandas as pd
-from stable_baselines3 import SAC
+from stable_baselines3 import SAC, PPO
 from src.common import env
 
+OUTPUT_DIR = Path('data/experts/')
 
 def collect(model_path,
-            output,
             episodes,
-            seed_start):
+            seed_start,
+            model_name ):
 
-    model = SAC.load(str(model_path), device='cpu')
+    if model_name.lower() == 'ppo':
+        model = PPO.load(str(model_path), device='cpu')
+
+    elif model_name.lower() == 'sac':
+        model = SAC.load(str(model_path), device='cpu')
+
+    else:
+        raise ValueError("model_name must be either 'ppo' or 'sac'")
     e = env()
     observations, actions, episode_ids = [], [], []
     metadata = []
@@ -43,7 +51,7 @@ def collect(model_path,
                                  mean_control_cost=float(np.mean(costs))))
     finally:
         e.close()
-    output = Path(output)
+    output = Path(OUTPUT_DIR/model_name)
     output.mkdir(parents=True, exist_ok=True)
     np.savez_compressed(output / 'trajectories.npz',
                         observations=np.asarray(observations, dtype=np.float32),
@@ -55,17 +63,18 @@ def collect(model_path,
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument('--model', type=Path, required=True, help='Existing SAC .zip checkpoint')
-    p.add_argument('--out', type=Path, default=Path('data/expert'))
+    p.add_argument('--model', type=Path, required=True, help='Existing sac or ppo .zip checkpoints')
     p.add_argument('--episodes', type=int, default=300)
     p.add_argument('--seed-start', type=int, default=10000)
+    p.add_argument('--model_name', type=str, default='ppo')
     a = p.parse_args()
     if a.episodes < 10 or a.seed_start < 0:
         p.error('Need at least 10 episodes and a nonnegative reset seed.')
     collect(a.model,
-            a.out,
             a.episodes,
-            a.seed_start)
+            a.seed_start,
+            a.model_name
+            )
 
 if __name__ == '__main__':
     main()
