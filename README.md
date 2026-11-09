@@ -42,9 +42,56 @@ Based on presented results, SAC model could show better performance compared to 
 
 Two groups of demonstartions has been conisdred; 150 seeds and 300 seeds. As each episode takes 50 timesteps in 150 seeds experiments we have 7500 demonstrations and for 300 seeds, we have 15000 demonstrations.
 
+```bash
+python -m scripts.build_datasets     --source data/experts     --out data/variants     --sizes 300 150     --val-fraction 0.2     --seed 123
+```
+
 ### Step3: Train Behaviour Cloning
 
 Train BC policies (3 independent random initializations per dataset).
+batch size = 256
+learning rate = 3e-4
+
+```bash
+python -m scripts.train_bc     --dataset data/variants     --sizes 150 300     --out mpython -m scripts.train_bc     --dataset data/variants     --sizes 150 300     --out models     --seeds 0 1 2     --epochs 50     --batch-size 256     --lr 3e-4
+```
+
+
+### Step4: Evalute the BC model
+
+
+```bash
+python -m scripts.evaluate \
+    --models models \
+    --sizes 150 300 \
+    --seeds 0 1 2 \
+    --episodes 300 \
+    --test-seed-start 20000 \
+    --sac-teacher ../SACvsPPO_Reacher-v5/models/sac_seed0.zip \
+    --ppo-teacher ../SACvsPPO_Reacher-v5/models/ppo_seed0.zip \
+    --out results/evaluation.csv
+```
+
+effect of high quality dataset:
+<p align="center">
+<img src="results/plots/n150_episode_return.png" width="48%">
+<img src="results/plots/n150_mean_distance.png" width="48%">
+</p>
+ 
+ affect of more demonstrations
+
+
+<p align="center">
+<img src="results/plots/n300_episode_return.png" width="48%">
+<img src="results/plots/n150_mean_distance.png" width="48%">
+</p>
+
+distance 
+<p align="center">
+<img src="results/plots/teacher_gap_episode_return.png" width="48%">
+<img src="results/plots/teacher_gap_mean_distance.png" width="48%">
+</p>
+
 
 Evaluate each BC model on the **same 100 held-out initializations** (seeds **20000–20099**) and plot results across the three training seeds.
 
