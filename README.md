@@ -1,14 +1,18 @@
-# Reacher-v5: How Does Demonstration Quality Affect Imitation Learning?
+# Reacher-v5: How Does Demonstration Quality & Quantity Affect Imitation Learning?
 
 Robotics data experiment that uses a previously trained SAC and PPO controllers 
 as *demonstration sources*, 
 trains Behavioral Cloning (BC) policies on differently selected trajectories, 
 and evaluates those policies on held-out Reacher-v5 tasks.
 
-> **Research question:** 
-> Does selecting demonstrations with better reaching outcomes improve a 
+> **Research questions:** 
+
+> 1. Does selecting demonstrations with better reaching outcomes improve a 
 > learned policy compared with training on lower-performing or randomly 
 > selected demonstrations?
+
+> 2. Does quantity of demonstartions in different variations of demonstration affect on performance 
+> of learned imitation learning policy?
 
 
 
@@ -17,9 +21,9 @@ and evaluates those policies on held-out Reacher-v5 tasks.
 
   <img src="figures/stps_effect of dataset_BC.png" width="88%">
 
-1. Collect expert deterministics with unique reset seeds 
-(default **10000–10299**) for SAC, ppo, and mix of both 
-demonstartions that consisit 50% of SAC and 50% of PPO.
+### Step 1: Collect Expert Deterministics
+
+Deterministics have been collect from two expertes policies from SAC, ppo, and mix of both demonstartions that consisit 50% of SAC and 50% of PPO. The trained models are in [Git Repo](https://github.com/mohanafathollahi/SACvsPPO_Reacher-v5) and demosntations have been produced for unique reset seeds (default **10000–10299**).
 
 
 ```bash
@@ -28,31 +32,25 @@ python -m scripts.collect   --model ../SACvsPPO_Reacher-v5/models/sac_seed0.zip 
 python -m scripts.collect   --model ../SACvsPPO_Reacher-v5/models/ppo_seed0.zip   --episodes 300 --seed-start 10000 --model_name "ppo"
 
 ```
+### Step 2: Build Datasets
 
-The trained models are in [Git Repo](https://github.com/mohanafathollahi/SACvsPPO_Reacher-v5), based on presented results
-SAC model could show better performance compared to PPO. Therefore, it conisdted as high quality dataset while PPO considered 
-as low quality data to train Behaviour Clonning model.
+Build three datasets with the same number of selected trajectories and same seeds as below: 
 
-Reacher-v5 reaching tasks, and saves both the observation-action demonstrations and their performance statistics.
+**high-quality** (smallest final distance), **low-quality** (largest final distance), and **random baseline** (mix of high and low quality datasets).
 
-2. Compute per-trajectory statistics, including reaching distance and success.
+Based on presented results, SAC model could show better performance compared to PPO. Therefore, it conisdted as high quality dataset or demonstrations while PPO considered as low quality datasets. 
 
-3. Build three episode-level datasets with the same number of selected trajectories: 
+Two groups of demonstartions has been conisdred; 150 seeds and 300 seeds. As each episode takes 50 timesteps in 150 seeds experiments we have 7500 demonstrations and for 300 seeds, we have 15000 demonstrations.
 
-**high-quality** (smallest final distance), **low-quality** (largest final distance), and **random baseline**.
+### Step3: Train Behaviour Cloning
 
-4. Split each dataset by **whole episodes**, not individual transitions, into training and validation sets.
+Train BC policies (3 independent random initializations per dataset).
 
-Training has 3200 demonstrations, observation-action pairs, that is 80% of data and testing has 800 demonstrations that is 20% of data.
+Evaluate each BC model on the **same 100 held-out initializations** (seeds **20000–20099**) and plot results across the three training seeds.
 
+**Important limitations:** The "quality" labels mean *outcome-based trajectory selection*; 
 
-5. Train BC policies (3 independent random initializations per dataset), choosing each model's weights using 
-*validation action MSE only*.
-
-6. Evaluate each BC model on the **same 100 held-out initializations** (seeds **20000–20099**) and plot results 
-across the three training seeds.
-
-**Important limitations:** The "quality" labels mean *outcome-based trajectory selection*; they are **not ground-truth labels of controller competence**. Hard initial tasks may be overrepresented in the low-quality group. The high/low split does not establish a causal effect of action quality. A random baseline and shared final test set help, but do not eliminate this confound. A stronger follow-up matches datasets by target geometry and initial robot configuration, or uses controlled action-label corruption on identical observation states. Also, a SAC teacher need not be optimal. Verify it works before collecting data.
+they are **not ground-truth labels of controller competence**. Hard initial tasks may be overrepresented in the low-quality group. The high/low split does not establish a causal effect of action quality. A random baseline and shared final test set help, but do not eliminate this confound. A stronger follow-up matches datasets by target geometry and initial robot configuration, or uses controlled action-label corruption on identical observation states. Also, a SAC teacher need not be optimal. Verify it works before collecting data.
 
 ## Requirements
 
