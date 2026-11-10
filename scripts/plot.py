@@ -10,7 +10,18 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-
+# ---------------------------------------------------------
+# Plot font configuration
+# ---------------------------------------------------------
+plt.rcParams.update({
+    "font.size": 13,          # Default font size
+    "axes.titlesize": 16,     # Axes titles
+    "axes.labelsize": 14,     # X and Y axis labels
+    "xtick.labelsize": 12,    # X-axis tick labels
+    "ytick.labelsize": 12,    # Y-axis tick labels
+    "legend.fontsize": 12,    # Legend text
+    "figure.titlesize": 17    # Overall figure title
+})
 # ---------------------------------------------------------
 # Experiment configuration
 # ---------------------------------------------------------
@@ -31,16 +42,16 @@ LABELS = {
 
 METRICS = {
     "episode_return": (
-        "Episode return (higher is better)",
+        "Episode return",
         "higher",
     ),
     "mean_distance": (
-        "Mean fingertip distance (m; lower is better)",
+        "Mean fingertip distance",
         "lower",
     ),
 
     "mean_control_cost": (
-        "Mean control cost (lower is better)",
+        "Mean control cost",
         "lower",
     ),
 
@@ -265,7 +276,7 @@ def seed_scatter(bc, teacher, size, metric, output):
     )
 
     ax.legend(
-        fontsize=8,
+        # fontsize=8,
         ncol=2,
         loc="best",
     )
@@ -367,7 +378,7 @@ def size_trend(bc, teacher, metric, output):
     ax.grid(alpha=0.25)
 
     ax.legend(
-        fontsize=8,
+        # fontsize=8,
         ncol=2,
         loc="best",
     )
@@ -490,7 +501,7 @@ def teacher_gap(bc, teacher, metric, output):
 
     ax.grid(alpha=0.25)
 
-    ax.legend(fontsize=9)
+    # ax.legend(fontsize=9)
 
     fig.tight_layout()
 
@@ -534,8 +545,7 @@ def main():
 
     args.out.mkdir(
         parents=True,
-        exist_ok=True,
-    )
+        exist_ok=True,)
 
     count = 0
 
@@ -546,23 +556,20 @@ def main():
             bc,
             teacher,
             metric,
-            args.out / f"size_vs_{metric}.png",
-        )
+            args.out / f"size_vs_{metric}.png", )
 
         count += 1
 
         # Compare independent seeds at each dataset size.
         for size in sorted(
-            bc.dataset_size.unique()
-        ):
+            bc.dataset_size.unique()):
 
             seed_scatter(
                 bc,
                 teacher,
                 int(size),
                 metric,
-                args.out / f"n{int(size)}_{metric}.png",
-            )
+                args.out / f"n{int(size)}_{metric}.png",)
 
             count += 1
 
@@ -570,8 +577,6 @@ def main():
         if metric in (
             "episode_return",
             "mean_distance",
-            # "final_distance",
-            # "success_2cm",
         ):
 
             if teacher_gap(
@@ -586,13 +591,6 @@ def main():
     for size in sorted(
         bc.dataset_size.unique()
     ):
-
-        # tradeoff(
-        #     bc,
-        #     teacher,
-        #     int(size),
-        #     args.out / f"quality_tradeoff_n{int(size)}.png",
-        # )
 
         count += 1
 
