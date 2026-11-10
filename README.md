@@ -1,9 +1,6 @@
 # Reacher-v5: How Does Demonstration Quality & Quantity Affect Imitation Learning?
 
-Robotics data experiment that uses a previously trained SAC and PPO controllers 
-as *demonstration sources*, 
-trains Behavioral Cloning (BC) policies on differently selected trajectories, 
-and evaluates those policies on held-out Reacher-v5 tasks.
+In this project, Behaviour Cloning (BC) is applied to the Reacher-v5 robotic control task to investigate how quality of demonstration source and dataset size affect the performance of learned policies.
 
 > **Research questions:** 
 
@@ -36,7 +33,11 @@ python -m scripts.collect   --model ../SACvsPPO_Reacher-v5/models/ppo_seed0.zip 
 
 Build three datasets with the same number of selected trajectories and same seeds as below: 
 
-**high-quality** (smallest final distance), **low-quality** (largest final distance), and **random baseline** (mix of high and low quality datasets).
+**High-quality** (smallest final distance)
+
+**Low-quality** (largest final distance)
+ 
+**Random baseline** (mix of high and low quality datasets)
 
 Based on presented results, SAC model could show better performance compared to PPO. Therefore, it conisdted as high quality dataset or demonstrations while PPO considered as low quality datasets. 
 
@@ -47,10 +48,12 @@ python -m scripts.build_datasets     --source data/experts     --out data/varian
 ```
 
 ### Step3: Train Behaviour Cloning
+Behavioral Cloning (BC) is a supervised imitation-learning approach in which a policy learns to reproduce the actions of an expert or reference controller from recorded demonstrations.  
 
-Train BC policies (3 independent random initializations per dataset).
-batch size = 256
-learning rate = 3e-4
+BC policies are independently trained for each dataset using three random seeds (0, 1, 2). A neural network maps the robot's 10-dimensional observations to two continuous joint-torque commands by minimizing the Mean Squared Error (MSE) between predicted actions and demonstrated actions. 
+
+The BCPolicy is a fully connected feedforward neural network (Multi-Layer Perceptron, MLP) designed to learn a mapping from observations with size 10 to continuous actions with size 2 through behavioral cloning. It consists of two hidden layers, each containing **128 neurons** with **ReLU activation** functions to capture nonlinear relationships. The output layer contains **Tanh activation** function, constraining the predicted actions to the range \[-1,1]\. During training, the network learns to imitate expert behavior by minimizing the difference between its predicted actions and the corresponding expert actions in the demonstration dataset.
+
 
 ```bash
 python -m scripts.train_bc     --dataset data/variants     --sizes 150 300     --out mpython -m scripts.train_bc     --dataset data/variants     --sizes 150 300     --out models     --seeds 0 1 2     --epochs 50     --batch-size 256     --lr 3e-4
@@ -59,6 +62,7 @@ python -m scripts.train_bc     --dataset data/variants     --sizes 150 300     -
 
 ### Step4: Evalute the BC model
 
+The resulting policies are evaluated on identical held-out Reacher-v5 tasks, seeds from 20000 to 20299 and compared against the original SAC and PPO controllers using episode return, distance to goal,and control cost. This experimental design examines whether the source and quantity of demonstration data influence the effectiveness and generalization of imitation learning.
 
 ```bash
 python -m scripts.evaluate \
